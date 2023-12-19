@@ -1,4 +1,47 @@
-const { app, imuList, requestFileData } = require(".");
+const {app} = require("./index.js")
+
+const { variables} = require("./variables")
+
+const {requestFileData} = require("./utils.js")
+
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *      File:
+ *          type: object
+ *          properties:
+ *              index:
+ *                  type: integer
+ *                  description: Index of the file
+ *              filename:
+ *                  type: string
+ *                  description: Name of the file
+ *              size:
+ *                  type: integer
+ *                  description: Size of the file (in bytes)
+ *
+ *      IMU:
+ *          type: object
+ *          properties:
+ *              port:
+ *                  type: string
+ *                  description: Port of the IMU
+ *              tag:
+ *                  type: string
+ *                  description: Tag of the IMU
+ *              address:
+ *                  type: string
+ *                  description: Mac address of the IMU
+ *              fileList:
+ *                  type: array
+ *                  items:
+ *                      $ref: '#/components/schemas/File'
+ *              selectedFileList:
+ *                  type: array
+ *                  items:
+ *                      $ref: '#/components/schemas/File'
+ */
 
 
 /**
@@ -6,13 +49,91 @@ const { app, imuList, requestFileData } = require(".");
  * /getImuList:
  *  get:
  *     description: Get the list of IMUs
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/IMU'
  */
 app.get("/getImuList", function (request, response) {
-  response.send(imuList)
+  response.send(variables.imuList)
 })
-app.get("/getImuFileList", function (request, response) {
-  response.send(imuList[request.params.index].fileList)
+
+/**
+ * @swagger
+ * /getImuFileList/{index}:
+ *   get:
+ *     description: Get the list of files of an IMU
+ *     parameters:
+ *     - in: path
+ *       name: index
+ *       required: true
+ *       schema:
+ *         type: integer
+ *         description: Index of the IMU
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/File'
+ *       404:
+ *         description: IMU not found (out of bounds)
+ */
+app.get("/getImuFileList/:index", function (request, response) {
+    if(response.params.index === undefined)
+    {
+        response.send(variables.imuList[0].fileList)
+        return
+    }
+    if(response.params.index >= imuList.length)
+    {
+        response.send([], 404)
+        return
+    }
+  response.send(variables.imuList[request.params.index].fileList)
 })
-app.get("/getImuFileData", function (request, response) {
-  response.send(requestFileData(imuList[request.params.index]))
+
+/**
+ * @swagger
+ * /getImuFileData/{index}:
+ *   get:
+ *     description: Extract the data of an IMU, returns the path of the CSV
+ *     parameters:
+ *       - in: path
+ *         name: index
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           description: Index of the IMU
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               description: Path of the folder containing the file
+ *       404:
+ *         description: IMU not found (out of bounds)
+ */
+app.get("/getImuFileData/:index", function (request, response) {
+    if(response.params.index === undefined)
+    {
+        response.send(variables.imuList[0].fileList)
+        return
+    }
+    if(response.params.index >= imuList.length)
+    {
+        response.send([], 404)
+        return
+    }
+    response.send(requestFileData(variables.imuList[request.params.index]))
 })

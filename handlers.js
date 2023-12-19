@@ -1,19 +1,26 @@
-const { imuList, sendGuiEvent } = require(".");
+//const {sendGuiEvent} = require("./socket");
+const {variables} = require("./variables")
+const {sendGuiEvent} = require("./utils");
+
+
+function requestFileInfo(imu) {
+  sendGuiEvent("requestFileInfo", { port: imu.port });
+}
 
 function setImuList(newList) {
-  imuList = newList;
+  variables.imuList = newList;
 }
 function handleSensorDiscovered(newIMU) {
-  console.log(imuList);
-  const newList = imuList.concat(newIMU);
+  console.log(variables.imuList);
+  variables.imuList.push(newIMU);
   requestMacAdress(newIMU);
-  setImuList(newList);
-  //selectedSkater(newIMUs.map((newIMU) => { return {id: newIMU.port, name: newIMU.tag, lastSessionTime: "TBD"}}));
+  requestFileInfo(newIMU);
 }
+
 exports.handleSensorDiscovered = handleSensorDiscovered;
 function handleGetSensorTagDone(parameter) {
   // parameter: {port, tag}
-  const newList = imuList.slice();
+  const newList = variables.imuList.slice();
 
   let imu = newList.find((imu) => imu.port === parameter.port);
   imu.tag = parameter.tag;
@@ -22,7 +29,7 @@ function handleGetSensorTagDone(parameter) {
 exports.handleGetSensorTagDone = handleGetSensorTagDone;
 function handleMacAdressDone(parameter) {
   // parameter: {port, adress}
-  const newList = imuList.slice();
+  const newList = variables.imuList.slice();
 
   const imu = newList.find((imu) => imu.port === parameter.port);
 
@@ -36,7 +43,7 @@ function handleUpdateFlashInfo(parameter) {
 }
 exports.handleUpdateFlashInfo = handleUpdateFlashInfo;
 function handlegetSensorTagDone(parameter) {
-  const newList = imuList.slice();
+  const newList = variables.imuList.slice();
 
   const imu = newList.find((imu) => imu.port === parameter.port);
 
@@ -54,14 +61,14 @@ function handleExportFlashInfoDone(parameter) {
 }
 exports.handleExportFlashInfoDone = handleExportFlashInfoDone;
 function handleExportFlashInfoDone(parameter) {
-  imuList.find((imu) => imu.port === parameter.port).fileList = parameter.fileList;
+  variables.imuList.find((imu) => imu.port === parameter.port).fileList = parameter.fileList;
 }
 exports.handleExportFlashInfoDone = handleExportFlashInfoDone;
 function requestMacAdress(imu) {
   sendGuiEvent("requestMacAdress", { port: imu.port });
 }
 function handleExportFileInfoDone(parameter) {
-  let imu = imuList.find((imu) => imu.port === parameter.port).fileList = parameter.fileList;
+  let imu = variables.imuList.find((imu) => imu.port === parameter.port).fileList = parameter.fileList;
   imu.fileList = parameter.fileList;
 }
 exports.handleExportFileInfoDone = handleExportFileInfoDone;
