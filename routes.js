@@ -71,10 +71,10 @@ app.get("/getImuList", function (request, response) {
  *     parameters:
  *     - in: path
  *       name: index
- *       required: true
+ *       required: false
  *       schema:
  *         type: integer
- *         description: Index of the IMU
+ *         description: Index of the IMU. If none, the file list for the first IMU will be sent
  *     responses:
  *       200:
  *         description: Success
@@ -88,12 +88,13 @@ app.get("/getImuList", function (request, response) {
  *         description: IMU not found (out of bounds)
  */
 app.get("/getImuFileList/:index", function (request, response) {
-    if(response.params.index === undefined)
+    console.log(request)
+    if(request.params.index === undefined)
     {
         response.send(variables.imuList[0].fileList)
         return
     }
-    if(response.params.index >= imuList.length)
+    if(request.params.index >= variables.imuList.length)
     {
         response.send([], 404)
         return
@@ -109,10 +110,10 @@ app.get("/getImuFileList/:index", function (request, response) {
  *     parameters:
  *       - in: path
  *         name: index
- *         required: true
+ *         required: false
  *         schema:
  *           type: integer
- *           description: Index of the IMU
+ *           description: Index of the IMU. If not, the data of the first IMU found will be extracted.
  *     responses:
  *       200:
  *         description: Success
@@ -125,12 +126,12 @@ app.get("/getImuFileList/:index", function (request, response) {
  *         description: IMU not found (out of bounds)
  */
 app.get("/getImuFileData/:index", function (request, response) {
-    if(response.params.index === undefined)
+    if(request.params.index === undefined)
     {
         response.send(variables.imuList[0].fileList)
         return
     }
-    if(response.params.index >= imuList.length)
+    if(request.params.index >= variables.imuList.length)
     {
         response.send([], 404)
         return
